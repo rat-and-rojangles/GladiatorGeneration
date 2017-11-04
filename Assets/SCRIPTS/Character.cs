@@ -17,7 +17,9 @@ public class Character : MonoBehaviour {
 	private Vector2 groundCheckPointRightLocal;
 	public bool grounded {
 		get {
-			return Physics2D.OverlapPoint (transform.TransformPoint (groundCheckPointLeftLocal)) != null || Physics2D.OverlapPoint (transform.TransformPoint (groundCheckPointRightLocal)) != null;
+			Collider2D leftCollision = Physics2D.OverlapPoint (transform.TransformPoint (groundCheckPointLeftLocal));
+			Collider2D rightCollision = Physics2D.OverlapPoint (transform.TransformPoint (groundCheckPointRightLocal));
+			return (leftCollision != null && leftCollision != collider) || (rightCollision != null && rightCollision != collider);
 		}
 	}
 
@@ -39,15 +41,21 @@ public class Character : MonoBehaviour {
 		}
 		collider = GetComponent<BoxCollider2D> ();
 		rigidbody = GetComponent<Rigidbody2D> ();
-		groundCheckPointLeftLocal = collider.offset + Vector2.down * collider.size.y * 0.55f + Vector2.left * collider.size.x * 0.25f;
-		groundCheckPointRightLocal = collider.offset + Vector2.down * collider.size.y * 0.55f + Vector2.right * collider.size.x * 0.25f;
+		groundCheckPointLeftLocal = collider.offset + Vector2.down * collider.size.y * 0.55f + Vector2.left * collider.size.x * 0.5f;
+		groundCheckPointRightLocal = collider.offset + Vector2.down * collider.size.y * 0.55f + Vector2.right * collider.size.x * 0.5f;
 	}
 
 	void Update () {
 		actions = controller.GetActions ();
 	}
 
+	void OnDrawGizmos () {
+		Gizmos.DrawSphere (transform.TransformPoint (groundCheckPointLeftLocal), 0.25f);
+		Gizmos.DrawSphere (transform.TransformPoint (groundCheckPointRightLocal), 0.25f);
+	}
+
 	void FixedUpdate () {
+		OnScreenConsole.Log (grounded);
 		Vector2 velocity = rigidbody.velocity;
 		velocity.x = runSpeed * actions.moveDirection;
 		if (grounded && actions.jump) {
