@@ -10,23 +10,37 @@ public class ENN_v1 {
 	private float [,] B_2;
 	private float [] lr;
 
-	private float minDistance = Mathf.Infinity;
-	private int currentWinnerIndex = 0;
+	private struct WinnerDistance {
+		public WinnerDistance (float distance, int index) {
+			this.distance = distance;
+			this.index = index;
+		}
+		public float distance;
+		public int index;
+	}
+	private WinnerDistance [] winners = new WinnerDistance [3];
 
+	public UnityEngine.Color [] enemyColors;
 	private ControlCharacterML [] enemies;
 	private Character player;
 
 	public ENN_v1 (Character player, ControlCharacterML [] enemies) {
+		ResetWinners ();
 		this.player = player;
 		this.enemies = enemies;
-
+		enemyColors = new Color [NeuralNetController.staticRef.numberOfEnemies];
 		W_1 = new float [NeuralNetController.staticRef.numberOfEnemies, 6, 6]; //12 inputs, your momentum vector, their momentum vector, the x y z distances
 		B_1 = new float [NeuralNetController.staticRef.numberOfEnemies, 6];
 		W_2 = new float [NeuralNetController.staticRef.numberOfEnemies, 3, 6];
 		B_2 = new float [NeuralNetController.staticRef.numberOfEnemies, 3];
 		lr = new float [NeuralNetController.staticRef.numberOfEnemies];
-		for (int i = 0; i < NeuralNetController.staticRef.numberOfEnemies; i++) lr [i] = 0.01f;
+		for (int i = 0; i < NeuralNetController.staticRef.numberOfEnemies; i++) {
+			lr [i] = 0.01f;
+			// enemyColors [i] = new Color (UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value);
+			enemyColors [i] = new ColorHSV (i * 1f / NeuralNetController.staticRef.numberOfEnemies, 1f, 1f, 1f);
+			enemies [i].character.color = enemyColors [i];
 
+		}
 		for (int i = 0; i < NeuralNetController.staticRef.numberOfEnemies; i++) {
 			for (int j = 0; j < 6; j++) {
 				for (int k = 0; k < 6; k++) {
@@ -47,6 +61,20 @@ public class ENN_v1 {
 
 	}
 
+	private void ResetWinners () {
+		for (int x = 0; x < winners.Length; x++) {
+			winners [x] = new WinnerDistance (Mathf.Infinity, x);
+		}
+	}
+	private void RippleWinners () {
+		if (winners [2].distance < winners [1].distance) {
+			Utility.Swap (ref winners [2], ref winners [1]);
+		}
+		if (winners [1].distance < winners [0].distance) {
+			Utility.Swap (ref winners [1], ref winners [0]);
+		}
+	}
+
 	// Calculates info from player
 	public void Update () {
 		float [,] data = new float [NeuralNetController.staticRef.numberOfEnemies, 6];
@@ -54,9 +82,9 @@ public class ENN_v1 {
 			data [x, 0] = enemies [x].character.transform.position.x - player.transform.position.x;
 			data [x, 1] = enemies [x].character.transform.position.y - player.transform.position.y;
 			float currentDistance = Vector2.Distance (enemies [x].character.transform.position, player.transform.position);
-			if (currentDistance < minDistance) {
-				minDistance = currentDistance;
-				currentWinnerIndex = x;
+			if (currentDistance < winners [2].distance) {
+				winners [2] = new WinnerDistance (currentDistance, x);
+				RippleWinners ();
 			}
 			data [x, 2] = enemies [x].character.velocity.x;
 			data [x, 3] = enemies [x].character.velocity.y;
@@ -129,34 +157,90 @@ public class ENN_v1 {
 	/// <summary>
 	/// call then respawn
 	/// </summary>
-	void weight_update (int winner_i) {
-		for (int i = 0; i < NeuralNetController.staticRef.numberOfEnemies; i++) {
-			if (i != winner_i) {
-				lr [i] = lr [winner_i] + 2.0f * (UnityEngine.Random.value - .5f) / 5;
+	void weight_update (int winner_1_idx, int winner_2_idx, int winner_3_idx) {//
+		for (int i = 0; i < NeuralNetController.staticRef.numberOfEnemies / 2; i++) {
+			if (i != winner_1_idx & i != winner_2_idx & i != winner_3_idx) {
+				lr [i] = lr [winner_1_idx] + 2.0f * (UnityEngine.Random.value - .5f) / 5;
+
+				ColorHSV c = enemyColors [winner_1_idx];
+				c.h = (c.h + Utility.RandomOneMinusOne () * 0.1f).Normalized01 ();
+				enemyColors [i] = c;
 				for (int j = 0; j < 6; j++) {
 					for (int k = 0; k < 6; k++) {
 
-						W_1 [i, j, k] = W_1 [winner_i, j, k] + lr [i] * 2.0f * (UnityEngine.Random.value - .5f);
+						W_1 [i, j, k] = W_1 [winner_1_idx, j, k] + lr [i] * 2.0f * (UnityEngine.Random.value - .5f);
 
 					}
-					B_1 [i, j] = B_1 [winner_i, j] + lr [i] * 2.0f * (UnityEngine.Random.value - .5f);
+					B_1 [i, j] = B_1 [winner_1_idx, j] + lr [i] * 2.0f * (UnityEngine.Random.value - .5f);
 				}
 
 				for (int j = 0; j < 3; j++) {
 					for (int k = 0; k < 6; k++) {
-						W_2 [i, j, k] = W_2 [winner_i, j, k] + lr [i] * 2.0f * (UnityEngine.Random.value - .5f);
+						W_2 [i, j, k] = W_2 [winner_1_idx, j, k] + lr [i] * 2.0f * (UnityEngine.Random.value - .5f);
 					}
-					B_2 [i, j] = B_2 [winner_i, j] + lr [i] * 2.0f * (UnityEngine.Random.value - .5f);
+					B_2 [i, j] = B_2 [winner_1_idx, j] + lr [i] * 2.0f * (UnityEngine.Random.value - .5f);
+				}
+			}
+		}
+
+
+		for (int i = NeuralNetController.staticRef.numberOfEnemies / 2; i < 5 * NeuralNetController.staticRef.numberOfEnemies / 6; i++) {
+			if (i != winner_1_idx & i != winner_2_idx & i != winner_3_idx) {
+				lr [i] = lr [winner_2_idx] + 2.0f * (UnityEngine.Random.value - .5f) / 5;
+
+				ColorHSV c = enemyColors [winner_2_idx];
+				c.h = (c.h + Utility.RandomOneMinusOne () * 0.1f).Normalized01 ();
+				enemyColors [i] = c;
+				for (int j = 0; j < 6; j++) {
+					for (int k = 0; k < 6; k++) {
+
+						W_1 [i, j, k] = W_1 [winner_2_idx, j, k] + lr [i] * 2.0f * (UnityEngine.Random.value - .5f);
+
+					}
+					B_1 [i, j] = B_1 [winner_2_idx, j] + lr [i] * 2.0f * (UnityEngine.Random.value - .5f);
+				}
+
+				for (int j = 0; j < 3; j++) {
+					for (int k = 0; k < 6; k++) {
+						W_2 [i, j, k] = W_2 [winner_2_idx, j, k] + lr [i] * 2.0f * (UnityEngine.Random.value - .5f);
+					}
+					B_2 [i, j] = B_2 [winner_2_idx, j] + lr [i] * 2.0f * (UnityEngine.Random.value - .5f);
+				}
+			}
+		}
+
+		for (int i = 5 * NeuralNetController.staticRef.numberOfEnemies / 6; i < NeuralNetController.staticRef.numberOfEnemies; i++) {
+			if (i != winner_1_idx & i != winner_2_idx & i != winner_3_idx) {
+				lr [i] = lr [winner_3_idx] + 2.0f * (UnityEngine.Random.value - .5f) / 5;
+
+				ColorHSV c = enemyColors [winner_3_idx];
+				c.h = (c.h + Utility.RandomOneMinusOne () * 0.1f).Normalized01 ();
+				enemyColors [i] = c;
+				for (int j = 0; j < 6; j++) {
+					for (int k = 0; k < 6; k++) {
+
+						W_1 [i, j, k] = W_1 [winner_3_idx, j, k] + lr [i] * 2.0f * (UnityEngine.Random.value - .5f);
+
+					}
+					B_1 [i, j] = B_1 [winner_3_idx, j] + lr [i] * 2.0f * (UnityEngine.Random.value - .5f);
+				}
+
+				for (int j = 0; j < 3; j++) {
+					for (int k = 0; k < 6; k++) {
+						W_2 [i, j, k] = W_2 [winner_3_idx, j, k] + lr [i] * 2.0f * (UnityEngine.Random.value - .5f);
+					}
+					B_2 [i, j] = B_2 [winner_3_idx, j] + lr [i] * 2.0f * (UnityEngine.Random.value - .5f);
 				}
 			}
 		}
 	}
 
 	public void KillAndRespawn () {
-		weight_update (currentWinnerIndex);
+		weight_update (winners [0].index, winners [1].index, winners [2].index);
 		for (int x = 0; x < NeuralNetController.staticRef.numberOfEnemies; x++) {
-			enemies [x].character.transform.position = enemies [currentWinnerIndex].character.transform.position;
+			enemies [x].character.transform.position = enemies [winners [0].index].character.transform.position;
+			enemies [x].character.color = enemyColors [x];
 		}
-		minDistance = Mathf.Infinity;
+		ResetWinners ();
 	}
 }

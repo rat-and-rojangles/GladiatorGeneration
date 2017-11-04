@@ -5,17 +5,19 @@ using UnityEngine;
 public class CamShake : MonoBehaviour {
 
 	public float duration = 0.25f;
-	private float timeElapsed = 0f;
+	private float timeElapsed = 1f;
 	public float strength = 1f;
 
-	private void Shake () {
-		// transform.position = Random.insideUnitCircle * Mathf.Lerp(0f,strength)
+	public void Shake () {
+		timeElapsed = 0f;
 	}
 
 	// Update is called once per frame
 	void Update () {
 		if (Input.GetKeyDown (KeyCode.R)) {
-
+			Shake ();
 		}
+		transform.localPosition = Random.insideUnitCircle * Mathf.Lerp (strength, 0f, timeElapsed / duration);
+		timeElapsed += Time.deltaTime;
 	}
 }

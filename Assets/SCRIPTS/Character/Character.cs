@@ -23,6 +23,12 @@ public class Character : MonoBehaviour {
 		}
 	}
 
+	private SpriteRenderer renderer;
+	public Color color {
+		get { return renderer.color; }
+		set { renderer.color = value; }
+	}
+
 	public float runSpeed = 1f;
 	public float jumpHeight = 4f;
 
@@ -49,7 +55,7 @@ public class Character : MonoBehaviour {
 				controller = new ControlCharacterML (this);
 				break;
 		}
-
+		renderer = GetComponent<SpriteRenderer> ();
 		collider = GetComponent<BoxCollider2D> ();
 		rigidbody = GetComponent<Rigidbody2D> ();
 		groundCheckPointLeftLocal = collider.offset + Vector2.down * collider.size.y * 0.55f + Vector2.left * collider.size.x * 0.5f;
