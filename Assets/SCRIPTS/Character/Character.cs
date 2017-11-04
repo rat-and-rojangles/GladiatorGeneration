@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Character : MonoBehaviour {
-	private enum ControlType { Human, AI }
+	private enum ControlType { Human, Random, ML }
 	[SerializeField]
 	private ControlType controlType;
 
@@ -27,18 +27,29 @@ public class Character : MonoBehaviour {
 	public float jumpHeight = 4f;
 
 	private float jumpVelocity {
-		get { return Mathf.Sqrt (2f * jumpHeight * -Physics2D.gravity.y); }
+		get { return Mathf.Sqrt (2f * jumpHeight * -Physics2D.gravity.y * rigidbody.gravityScale); }
+	}
+
+	public Vector2 velocity {
+		get { return rigidbody.velocity; }
 	}
 
 	private FrameAction actions;
 
 	void Start () {
-		if (controlType == ControlType.Human) {
-			controller = new ControlCharacterHuman ();
+		switch (controlType) {
+			case ControlType.Human:
+				controller = new ControlCharacterHuman ();
+				NeuralNetController.staticRef.RegisterPlayer (this);
+				break;
+			case ControlType.Random:
+				controller = new ControlCharacterRandom ();
+				break;
+			default:
+				controller = new ControlCharacterML (this);
+				break;
 		}
-		else {
-			throw new System.NotImplementedException ();
-		}
+
 		collider = GetComponent<BoxCollider2D> ();
 		rigidbody = GetComponent<Rigidbody2D> ();
 		groundCheckPointLeftLocal = collider.offset + Vector2.down * collider.size.y * 0.55f + Vector2.left * collider.size.x * 0.5f;
@@ -46,21 +57,16 @@ public class Character : MonoBehaviour {
 	}
 
 	void Update () {
-		actions = controller.GetActions ();
-	}
-
-	void OnDrawGizmos () {
-		Gizmos.DrawSphere (transform.TransformPoint (groundCheckPointLeftLocal), 0.25f);
-		Gizmos.DrawSphere (transform.TransformPoint (groundCheckPointRightLocal), 0.25f);
+		actions = actions.Combined (controller.GetActions ());
 	}
 
 	void FixedUpdate () {
-		OnScreenConsole.Log (grounded);
 		Vector2 velocity = rigidbody.velocity;
 		velocity.x = runSpeed * actions.moveDirection;
 		if (grounded && actions.jump) {
 			velocity.y = jumpVelocity;
 		}
 		rigidbody.velocity = velocity;
+		actions = FrameAction.NEUTRAL;
 	}
 }

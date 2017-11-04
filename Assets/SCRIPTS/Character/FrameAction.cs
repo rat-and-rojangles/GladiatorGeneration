@@ -14,6 +14,17 @@ public struct FrameAction {
 		this.jump = jump;
 	}
 
+	/// <summary>
+	/// Overwrites movements, ORs jump
+	/// </summary>
+	public FrameAction Combined (FrameAction other) {
+		return new FrameAction (other.moveDirection, jump || other.jump);
+	}
+
+	private static FrameAction m_NEUTRAL = new FrameAction (0, false);
+	public static FrameAction NEUTRAL {
+		get { return m_NEUTRAL; }
+	}
 
 	// /// <summary>
 	// /// Gun angle
