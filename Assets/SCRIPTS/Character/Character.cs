@@ -39,19 +39,38 @@ public class Character : MonoBehaviour {
 	public int numberOfJumps = 2;
 	private int remainingJumps = 0;
 
-	private float jumpVelocity {
-		get { return Mathf.Sqrt (2f * jumpHeight * -Physics2D.gravity.y * rigidbody.gravityScale); }
+	/// <summary>
+	/// Cuts run speed and jump height.
+	/// </summary>
+	public bool weakened = false;
+
+	private float derivedRunSpeed {
+		get {
+			return weakened ? runSpeed * 0.5f : runSpeed;
+		}
+	}
+	private float derivedJumpVelocity {
+		get {
+			float maxJumpVel = Mathf.Sqrt (2f * jumpHeight * -Physics2D.gravity.y * rigidbody.gravityScale);
+			if (weakened) {
+				maxJumpVel *= 0.75f;
+			}
+			return maxJumpVel;
+		}
 	}
 
 	public Vector2 velocity {
 		get { return rigidbody.velocity; }
 	}
 
+	public bool dead {
+		get { return !enabled; }
+	}
+
 	private FrameAction actions;
 
 	void Start () {
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        switch (controlType) {
+		switch (controlType) {
 			case ControlType.Human:
 				controller = new ControlCharacterHuman ();
 				try {
@@ -68,6 +87,7 @@ public class Character : MonoBehaviour {
 				controller = new ControlCharacterML (this);
 				break;
 		}
+		spriteRenderer = GetComponent<SpriteRenderer> ();
 		collider = GetComponent<BoxCollider2D> ();
 		rigidbody = GetComponent<Rigidbody2D> ();
 		groundCheckPointLeftLocal = collider.offset + Vector2.down * collider.size.y * 0.55f + Vector2.left * collider.size.x * 0.5f;
@@ -83,20 +103,78 @@ public class Character : MonoBehaviour {
 		if (grounded) {
 			remainingJumps = numberOfJumps - 1;
 		}
-		Vector2 velocity = rigidbody.velocity;
-		velocity.x = runSpeed * actions.moveDirection;
+
+		if (actions.moveDirection == 0) {
+			// rigidbody.AddForce (Vector2.right * derivedRunSpeed * 0.1f * -rigidbody.velocity.x.Sign (), ForceMode2D.Impulse);
+			rigidbody.SetVelocity (new Vector2 (Mathf.Lerp (velocity.x, 0f, 5f * Time.fixedDeltaTime), velocity.y));
+		}
+		else {
+			// rigidbody.AddForce (Vector2.right * derivedRunSpeed * actions.moveDirection, ForceMode2D.Impulse);
+			rigidbody.SetVelocity (new Vector2 (derivedRunSpeed * actions.moveDirection, velocity.y));
+		}
+
 		if (actions.jump) {
 			if (grounded) {
-				velocity.y = jumpVelocity;
-				timeSinceLastJump = 0f;
+				Jump ();
 			}
 			else if (remainingJumps > 0) {
 				remainingJumps--;
-				velocity.y = jumpVelocity;
-				timeSinceLastJump = 0f;
+				Jump ();
 			}
 		}
-		rigidbody.velocity = velocity;
 		actions = FrameAction.NEUTRAL;
+	}
+
+	private void Jump () {
+		// velocity.y = derivedJumpVelocity;
+		// rigidbody.velocity += Vector2.up * derivedJumpVelocity;
+		// rigidbody.AddForce (Vector2.up * derivedJumpVelocity, ForceMode2D.Impulse);
+		rigidbody.SetVelocity (new Vector2 (velocity.x, derivedJumpVelocity));
+		timeSinceLastJump = 0f;
+	}
+
+	public void OnTriggerEnter2D (Collider2D other) {
+		if (other.gameObject.activeSelf && controlType != ControlType.Human && enabled && !other.name.Equals ("Hurtbox")) {
+			// float
+			if (!other.CompareTag ("Laser")) {
+				other.gameObject.SetActive (false);
+			}
+			else{
+
+			}
+			Kill ();
+			if (other.name.Equals ("Bullet")) {
+				Destroy (other.gameObject);
+			}
+		}
+	}
+	public void Kill () {
+		gameObject.SetActive (false);
+		DeathParticle.PlayEffect (transform.position, color);
+		Scoreboard.AddScore (1);
+	}
+
+	/// <summary>
+	/// For ML enemies.
+	/// </summary>
+	public void RespawnAtPosition (Vector3 position) {
+		gameObject.SetActive (true);
+		StartCoroutine (RespawnAtPositionHelper (position));
+	}
+	private IEnumerator RespawnAtPositionHelper (Vector3 position) {
+		enabled = false;
+		rigidbody.isKinematic = true;
+		Vector3 initialPosition = transform.position;
+		float respawnTimeElapsed = 0f;
+		transform.localScale = Vector3.one * 0.5f;
+		while (respawnTimeElapsed < ControlCharacterML.RESPAWN_TIME) {
+			respawnTimeElapsed += Time.deltaTime;
+			transform.position = Interpolation.Interpolate (initialPosition, position, respawnTimeElapsed / ControlCharacterML.RESPAWN_TIME, InterpolationMethod.Quadratic);
+			Crossfade.fadeAmount = respawnTimeElapsed / ControlCharacterML.RESPAWN_TIME;
+			yield return null;
+		}
+		transform.localScale = Vector3.one;
+		enabled = true;
+		rigidbody.isKinematic = false;
 	}
 }

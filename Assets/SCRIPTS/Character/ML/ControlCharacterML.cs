@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class ControlCharacterML : ControlCharacter {
+	public static float RESPAWN_TIME {
+		get { return 0.5f; }
+	}
 	private Character m_character;
 	public Character character { get { return m_character; } }
 	private FrameAction actions;

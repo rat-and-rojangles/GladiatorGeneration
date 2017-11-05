@@ -5,6 +5,7 @@ using UnityEngine;
 public class NeuralNetController : MonoBehaviour {
 
 	public float generationDuration;
+	public float maxGenerationVariation;
 	private float timeElapsed = 0f;
 
 	[SerializeField]
@@ -18,7 +19,10 @@ public class NeuralNetController : MonoBehaviour {
 	private int intialEnemyIndex = 0;
 	private Character player = null;
 
+	private float currentGenerationDuration;
+
 	void Awake () {
+		NewGenerationDuration ();
 		enemies = new ControlCharacterML [numberOfEnemies];
 		staticRef = this;
 	}
@@ -28,28 +32,28 @@ public class NeuralNetController : MonoBehaviour {
 	}
 
 	void Update () {
+		if (net == null) {
+			net = new EvolutionaryNeuralNetwork (player, enemies);
+		}
 		net.Update ();
 		timeElapsed += Time.deltaTime;
-		if (timeElapsed >= generationDuration) {
+		if (timeElapsed >= currentGenerationDuration + ControlCharacterML.RESPAWN_TIME) {
 			timeElapsed = 0f;
 			net.KillAndRespawn ();
 		}
 	}
 
-
-	private void InitializeNetIfReady () {
-		if (player != null && intialEnemyIndex == numberOfEnemies) {
-			net = new EvolutionaryNeuralNetwork (player, enemies);
-		}
+	private void NewGenerationDuration () {
+		currentGenerationDuration = generationDuration + Utility.randomPlusOrMinusOne * maxGenerationVariation;
 	}
 	public void RegisterEnemy (ControlCharacterML characterML) {
 		enemies [intialEnemyIndex] = characterML;
 		intialEnemyIndex++;
-		InitializeNetIfReady ();
+		// InitializeNetIfReady ();
 	}
 	public void RegisterPlayer (Character player) {
 		this.player = player;
-		InitializeNetIfReady ();
+		// InitializeNetIfReady ();
 	}
 
 
