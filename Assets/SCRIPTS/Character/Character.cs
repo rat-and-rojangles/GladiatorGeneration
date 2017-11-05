@@ -39,6 +39,8 @@ public class Character : MonoBehaviour {
 	public int numberOfJumps = 2;
 	private int remainingJumps = 0;
 
+	public bool blockInput = false;
+
 	private float jumpVelocity {
 		get { return Mathf.Sqrt (2f * jumpHeight * -Physics2D.gravity.y * rigidbody.gravityScale); }
 	}
@@ -76,7 +78,12 @@ public class Character : MonoBehaviour {
 
 	void Update () {
 		timeSinceLastJump += Time.deltaTime;
-		actions = actions.Combined (controller.GetActions ());
+		if (blockInput && false) {
+			actions = FrameAction.NEUTRAL;
+		}
+		else {
+			actions = actions.Combined (controller.GetActions ());
+		}
 	}
 
 	void FixedUpdate () {
@@ -85,6 +92,7 @@ public class Character : MonoBehaviour {
 		}
 		Vector2 velocity = rigidbody.velocity;
 		velocity.x = runSpeed * actions.moveDirection;
+
 		if (actions.jump) {
 			if (grounded) {
 				velocity.y = jumpVelocity;
