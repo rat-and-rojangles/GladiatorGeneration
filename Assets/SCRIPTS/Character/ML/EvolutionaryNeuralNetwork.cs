@@ -33,41 +33,51 @@ public class EvolutionaryNeuralNetwork {
 	private int winner_1_idx;
 	private int winner_3_idx;
 
-	public EvolutionaryNeuralNetwork (Character player, ControlCharacterML [] enemies) {
-		ResetWinners ();
-		this.player = player;
-		this.enemies = enemies;
-		enemyColors = new Color [num_enemies];
-		W_1 = new float [num_enemies, HIDDENLAYERS, INPUTLAYERS]; //12 inputs, your momentum vector, their momentum vector, the x y z distances
-		B_1 = new float [num_enemies, HIDDENLAYERS];
-		W_2 = new float [num_enemies, OUTPUTLAYERS, HIDDENLAYERS];
-		B_2 = new float [num_enemies, OUTPUTLAYERS];
-		lr = new float [num_enemies];
-		for (int i = 0; i < num_enemies; i++) {
-			lr [i] = 0.01f;
-			enemyColors [i] = new ColorHSV (i * 1f / num_enemies, 1f, 1f, 1f);
-			enemies [i].character.color = enemyColors [i];
-		}
-		for (int i = 0; i < num_enemies; i++) {
-			for (int j = 0; j < HIDDENLAYERS; j++) {
-				for (int k = 0; k < INPUTLAYERS; k++) {
-					W_1 [i, j, k] = 2.0f * (UnityEngine.Random.value - .5f);
-				}
-				B_1 [i, j] = 2.0f * (UnityEngine.Random.value - .5f);
-			}
-		}
+    public EvolutionaryNeuralNetwork(Character player, ControlCharacterML[] enemies)
+    {
+        ResetWinners();
+        this.player = player;
+        this.enemies = enemies;
+        enemyColors = new Color[num_enemies];
+        W_1 = new float[num_enemies, HIDDENLAYERS, INPUTLAYERS]; //12 inputs, your momentum vector, their momentum vector, the x y z distances
+        B_1 = new float[num_enemies, HIDDENLAYERS];
+        W_2 = new float[num_enemies, OUTPUTLAYERS, HIDDENLAYERS];
+        B_2 = new float[num_enemies, OUTPUTLAYERS];
+        lr = new float[num_enemies];
+        for (int i = 0; i < num_enemies; i++)
+        {
+            lr[i] = 0.01f;
+            enemyColors[i] = new ColorHSV(i * 1f / num_enemies, 1f, 1f, 1f);
+            enemies[i].character.color = enemyColors[i];
+        }
+        for (int i = 0; i < num_enemies; i++)
+        {
+            for (int j = 0; j < HIDDENLAYERS; j++)
+            {
+                for (int k = 0; k < INPUTLAYERS; k++)
+                {
+                    W_1[i, j, k] = 2.0f * (UnityEngine.Random.value - .5f);
+                }
+                B_1[i, j] = 2.0f * (UnityEngine.Random.value - .5f);
+            }
+        }
 
-		for (int i = 0; i < num_enemies; i++) {
-			for (int j = 0; j < OUTPUTLAYERS; j++) {
-				for (int k = 0; k < HIDDENLAYERS; k++) {
-					W_2 [i, j, k] = 2.0f * (UnityEngine.Random.value - .5f);
-				}
-				B_2 [i, j] = 2.0f * (UnityEngine.Random.value - .5f);
-			}
-		}
+        for (int i = 0; i < num_enemies; i++)
+        {
+            for (int j = 0; j < OUTPUTLAYERS; j++)
+            {
+                for (int k = 0; k < HIDDENLAYERS; k++)
+                {
+                    W_2[i, j, k] = 2.0f * (UnityEngine.Random.value - .5f);
+                    if (j == 0) W_2[i, j, k] = 0.0f;
+                }
+                B_2[i, j] = 2.0f * (UnityEngine.Random.value - .5f);
+                if (j == 0) B_2[i, j] = -0.01f;
+            }
+        }
 
-	}
-
+        
+    }
 	private void ResetWinners () {
 		for (int x = 0; x < winners.Length; x++) {
 			winners [x] = new WinnerDistance (Mathf.Infinity, x);
