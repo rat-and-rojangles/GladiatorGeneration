@@ -23,8 +23,9 @@ public class MegaLaserFlare : MonoBehaviour {
 
 	public float recoilStrength = 10f;
 
-	[ContextMenu("fire in the hole")]
+	[ContextMenu ("fire in the hole")]
 	public void Fire () {
+		SoundCatalog.PlayGroanSound ();
 		player.weakened = true;
 		m_firing = true;
 		transform.localScale = new Vector3 (1f, 0f, 1f);
@@ -36,7 +37,6 @@ public class MegaLaserFlare : MonoBehaviour {
 	}
 
 	private IEnumerator FiringRoutine () {
-		playerRB.AddForce (transform.right * -recoilStrength, ForceMode2D.Impulse);
 		float openTime = launchDuration * openFraction;
 		float closeStart = launchDuration - launchDuration * closeFraction;
 		float closeDuration = launchDuration * closeFraction;
@@ -50,7 +50,7 @@ public class MegaLaserFlare : MonoBehaviour {
 				player.weakened = false;
 				transform.localScale = new Vector3 (1f, Interpolation.Interpolate (1f, 0f, (ratio - closeStart) / closeDuration, InterpolationMethod.Quadratic), 1f);
 			}
-			// playerRB.AddForce (transform.right * -recoilStrength);
+			playerRB.AddForce (transform.right * -recoilStrength * ratio);
 			yield return null;
 		}
 		m_firing = false;

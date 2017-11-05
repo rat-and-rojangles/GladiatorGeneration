@@ -13,6 +13,5 @@ public class DeathParticle : MonoBehaviour {
 
 	void Start () {
 		particleSystem = GetComponent<ParticleSystem> ();
-		print (particleSystem);
 	}
 }

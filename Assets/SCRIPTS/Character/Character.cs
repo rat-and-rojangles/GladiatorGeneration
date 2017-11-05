@@ -134,13 +134,20 @@ public class Character : MonoBehaviour {
 	}
 
 	public void OnTriggerEnter2D (Collider2D other) {
-		if (controlType != ControlType.Human && enabled) {
-			gameObject.SetActive (false);
-			DeathParticle.PlayEffect (transform.position, color);
+		if (other.gameObject.activeSelf && controlType != ControlType.Human && enabled && !other.name.Equals ("Hurtbox")) {
+			if (!other.CompareTag ("Laser")) {
+				other.gameObject.SetActive (false);
+			}
+			Kill ();
 			if (other.name.Equals ("Bullet")) {
 				Destroy (other.gameObject);
 			}
 		}
+	}
+	public void Kill () {
+		gameObject.SetActive (false);
+		DeathParticle.PlayEffect (transform.position, color);
+		Scoreboard.AddScore (1);
 	}
 
 	/// <summary>
@@ -159,6 +166,7 @@ public class Character : MonoBehaviour {
 		while (respawnTimeElapsed < ControlCharacterML.RESPAWN_TIME) {
 			respawnTimeElapsed += Time.deltaTime;
 			transform.position = Interpolation.Interpolate (initialPosition, position, respawnTimeElapsed / ControlCharacterML.RESPAWN_TIME, InterpolationMethod.Quadratic);
+			Crossfade.fadeAmount = respawnTimeElapsed / ControlCharacterML.RESPAWN_TIME;
 			yield return null;
 		}
 		transform.localScale = Vector3.one;

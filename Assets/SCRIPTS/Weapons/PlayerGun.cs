@@ -40,6 +40,9 @@ public class PlayerGun : MonoBehaviour {
 	private float timeSinceMaxCharge = -1f;
 	public float flareChargeTime = 1f;
 
+	void Start () {
+		chargeTimeElapsed = fullChargeDuration;
+	}
 
 	void Update () {
 		Vector3 mouseWorldPoint = Camera.main.ScreenToWorldPoint (Input.mousePosition);
@@ -47,22 +50,25 @@ public class PlayerGun : MonoBehaviour {
 
 		Vector3 normalDiff = diff.normalized;
 		float rot_z = Mathf.Atan2 (normalDiff.y, normalDiff.x) * Mathf.Rad2Deg;
-		Quaternion theEuler = Quaternion.Euler (0f, 0f, rot_z);
+
 		if (!flare.firing) {
-			transform.rotation = theEuler;
+			transform.rotation = Quaternion.Euler (0f, 0f, rot_z);
+		}
+		else {
+			transform.rotation = Quaternion.Lerp (transform.rotation, Quaternion.Euler (0f, 0f, rot_z), 2f * Time.deltaTime);
 		}
 		if (!Input.GetKey (lookKey)) {
 			camLead = Vector2.zero;
 		}
 		else if (Input.GetKey (lookKey)) {
 			float leadFactor = Mathf.Lerp (leadMinDistance, leadMaxDistance, (diff.magnitude - leadMinDistance) / (leadMaxDistance - leadMinDistance)) - leadMinDistance;
-			camLead = theEuler * Vector2.right * leadFactor;
+			camLead = transform.right * leadFactor;
 		}
 
 		follow.offset = camLead;
 		if (!flare.firing) {
 			player.weakened = Input.GetMouseButton (0);
-			float increment = Input.GetMouseButton (0) ? Time.deltaTime * 3f : Time.deltaTime;
+			float increment = Input.GetMouseButton (0) ? Time.deltaTime * 4f : Time.deltaTime;
 			chargeTimeElapsed = Mathf.Clamp (chargeTimeElapsed + increment, 0f, fullChargeDuration);
 			if (timeSinceMaxCharge >= 0f) {
 				timeSinceMaxCharge += Time.deltaTime;
@@ -73,6 +79,10 @@ public class PlayerGun : MonoBehaviour {
 
 			if (Input.GetMouseButton (0) && chargeRatio > 0.99f && timeSinceMaxCharge > flareChargeTime) {
 				CamShake.Shake (0.1f, Mathf.Clamp ((timeSinceMaxCharge - flareChargeTime) * 0.25f, 0f, 0.25f));
+				SoundCatalog.SetNoiseVolume (Mathf.Clamp01 (timeSinceMaxCharge - flareChargeTime));
+			}
+			else {
+				SoundCatalog.SetNoiseVolume (0f);
 			}
 
 			if (Input.GetMouseButtonUp (0)) {
@@ -80,6 +90,7 @@ public class PlayerGun : MonoBehaviour {
 					flare.Fire ();
 				}
 				else if (chargeTimeElapsed > bulletChargeDrain) {
+					SoundCatalog.PlayGunshotSound ();
 					GameObject bullet = Instantiate (bulletPrefab, transform.position, transform.rotation);
 					bullet.name = "Bullet";
 					bullet.GetComponent<Rigidbody2D> ().velocity = transform.right * 50f;

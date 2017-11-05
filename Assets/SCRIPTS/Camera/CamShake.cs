@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class CamShake : MonoBehaviour {
 
-	public float duration;
+	private float duration;
 	private float timeElapsed = 1f;
-	public float strength = 1f;
+	private float strength = 1f;
 
 	private static CamShake staticRef;
 
