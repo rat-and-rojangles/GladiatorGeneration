@@ -27,5 +27,7 @@ public class Crossfade : MonoBehaviour {
 	void Update () {
 		musicA.volume = crossAmount;
 		musicB.volume = 1f - crossAmount;
+		musicA.pitch = Mathf.Lerp (0.25f, 1f, crossAmount);
+		musicB.pitch = Mathf.Lerp (0.25f, 1f, crossAmount);
 	}
 }

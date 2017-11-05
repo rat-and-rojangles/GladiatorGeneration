@@ -78,7 +78,9 @@ public class EvolutionaryNeuralNetwork {
 	public void Update () {
 		float [,] data = new float [num_enemies, INPUTLAYERS];
 		for (int x = 0; x < num_enemies; x++) {
+			float playerDistance = Vector2.Distance (enemies [x].character.transform.position, player.transform.position);
 			if (enemies [x].character.dead) {
+				playerDistance = playerDistance * 1000f;
 				data [x, 0] = (enemies [x].character.transform.position.x - player.transform.position.x) * 1000f;
 				data [x, 1] = (enemies [x].character.transform.position.y - player.transform.position.y) * 1000f;
 			}
@@ -86,8 +88,11 @@ public class EvolutionaryNeuralNetwork {
 				data [x, 0] = enemies [x].character.transform.position.x - player.transform.position.x;
 				data [x, 1] = enemies [x].character.transform.position.y - player.transform.position.y;
 			}
-			float playerDistance = Vector2.Distance (enemies [x].character.transform.position, player.transform.position);
-			if (playerDistance < winners [0].distance) {
+			playerDistance = Vector2.Distance (enemies [x].character.transform.position, player.transform.position);
+			if (x < 3) {
+				winners [x] = new WinnerDistance (playerDistance, x);
+			}
+			else if (playerDistance < winners [0].distance) {
 				winners [2] = winners [1];
 				winners [1] = winners [0];
 				winners [0] = new WinnerDistance (playerDistance, x);

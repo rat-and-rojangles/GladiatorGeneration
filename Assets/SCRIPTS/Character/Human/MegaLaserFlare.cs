@@ -21,10 +21,17 @@ public class MegaLaserFlare : MonoBehaviour {
 	[SerializeField]
 	private Character player;
 
+	[SerializeField]
+	private ParticleSystem particleSystem1;
+	[SerializeField]
+	private ParticleSystem particleSystem2;
+
 	public float recoilStrength = 10f;
 
 	[ContextMenu ("fire in the hole")]
 	public void Fire () {
+		particleSystem1.Play ();
+		particleSystem2.Play ();
 		SoundCatalog.PlayGroanSound ();
 		player.weakened = true;
 		m_firing = true;
@@ -55,5 +62,7 @@ public class MegaLaserFlare : MonoBehaviour {
 		}
 		m_firing = false;
 		gameObject.SetActive (false);
+		particleSystem1.Stop ();
+		particleSystem2.Stop ();
 	}
 }
