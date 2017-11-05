@@ -4228,6 +4228,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0abead0db6bd58c45a8eb40a8eedcd24, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  respawnTime: 1
   generationDuration: 3
   maxGenerationVariation: 1
   m_numberOfEnemies: 100

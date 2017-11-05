@@ -160,10 +160,10 @@ public class Character : MonoBehaviour {
 		Vector3 initialPosition = transform.position;
 		float respawnTimeElapsed = 0f;
 		transform.localScale = Vector3.one * 0.5f;
-		while (respawnTimeElapsed < ControlCharacterML.RESPAWN_TIME) {
+		while (respawnTimeElapsed < NeuralNetController.staticRef.respawnTime) {
 			respawnTimeElapsed += Time.deltaTime;
-			transform.position = Interpolation.Interpolate (initialPosition, position, respawnTimeElapsed / ControlCharacterML.RESPAWN_TIME, InterpolationMethod.Quadratic);
-			Crossfade.fadeAmount = respawnTimeElapsed / ControlCharacterML.RESPAWN_TIME;
+			transform.position = Interpolation.Interpolate (initialPosition, position, respawnTimeElapsed / NeuralNetController.staticRef.respawnTime, InterpolationMethod.Quadratic);
+			Crossfade.fadeAmount = respawnTimeElapsed / NeuralNetController.staticRef.respawnTime;
 			yield return null;
 		}
 		transform.localScale = Vector3.one;

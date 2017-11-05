@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class NeuralNetController : MonoBehaviour {
 
+	public float respawnTime;
+
 	public float generationDuration;
 	public float maxGenerationVariation;
 	private float timeElapsed = 0f;
@@ -37,7 +39,7 @@ public class NeuralNetController : MonoBehaviour {
 		}
 		net.Update ();
 		timeElapsed += Time.deltaTime;
-		if (timeElapsed >= currentGenerationDuration + ControlCharacterML.RESPAWN_TIME) {
+		if (timeElapsed >= currentGenerationDuration + respawnTime) {
 			timeElapsed = 0f;
 			net.KillAndRespawn ();
 		}
@@ -64,5 +66,18 @@ public class NeuralNetController : MonoBehaviour {
 		for (int x = 0; x < numberOfEnemies; x++) {
 			Instantiate (enemyMLPrefab).transform.parent = transform;
 		}
+	}
+
+	public void GrindMusic () {
+		StartCoroutine (GrindMusicHelper ());
+	}
+	private IEnumerator GrindMusicHelper () {
+		float respawnTimeElapsed = 0f;
+		while (respawnTimeElapsed < respawnTime) {
+			respawnTimeElapsed += Time.deltaTime;
+			Crossfade.fadeAmount = Interpolation.Interpolate (0f, 1f, respawnTimeElapsed / respawnTime, InterpolationMethod.Quadratic);
+			yield return null;
+		}
+
 	}
 }
