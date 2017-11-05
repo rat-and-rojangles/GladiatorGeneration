@@ -91,7 +91,7 @@ public class EvolutionaryNeuralNetwork {
 			playerDistance = Vector2.Distance (enemies [x].character.transform.position, player.transform.position);
 			if( x< 3)
             		{
-                		winners[x] = new WinnerDistance(currentDistance, x);
+                		winners[x] = new WinnerDistance(playerDistance, x);
             		}
 			else if (playerDistance < winners [0].distance) {
 				winners [2] = winners [1];
