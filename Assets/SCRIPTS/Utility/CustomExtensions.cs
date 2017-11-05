@@ -44,6 +44,13 @@ public static class CustomExtensions {
 	}
 
 	/// <summary>
+	/// non-disruptively set the rigidbody velocity
+	/// </summary>
+	public static void SetVelocity (this Rigidbody2D rigidbody2D, Vector2 velocity) {
+		rigidbody2D.velocity += -rigidbody2D.velocity + velocity;
+	}
+
+	/// <summary>
 	/// returns 1 if positive, -1 if negative, 0 if zero. epsilon = 0.000001f
 	/// </summary>
 	public static int Sign (this float x) {

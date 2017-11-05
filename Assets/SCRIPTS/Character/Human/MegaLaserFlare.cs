@@ -18,9 +18,14 @@ public class MegaLaserFlare : MonoBehaviour {
 	[SerializeField]
 	private Rigidbody2D playerRB;
 
+	[SerializeField]
+	private Character player;
+
 	public float recoilStrength = 10f;
 
+	[ContextMenu("fire in the hole")]
 	public void Fire () {
+		player.weakened = true;
 		m_firing = true;
 		transform.localScale = new Vector3 (1f, 0f, 1f);
 		gameObject.SetActive (true);
@@ -42,8 +47,10 @@ public class MegaLaserFlare : MonoBehaviour {
 				transform.localScale = new Vector3 (1f, Interpolation.Interpolate (0f, 1f, ratio / openTime, InterpolationMethod.SquareRoot), 1f);
 			}
 			else if (ratio > closeStart) {
+				player.weakened = false;
 				transform.localScale = new Vector3 (1f, Interpolation.Interpolate (1f, 0f, (ratio - closeStart) / closeDuration, InterpolationMethod.Quadratic), 1f);
 			}
+			// playerRB.AddForce (transform.right * -recoilStrength);
 			yield return null;
 		}
 		m_firing = false;

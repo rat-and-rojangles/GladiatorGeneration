@@ -30,7 +30,7 @@ public class NeuralNetController : MonoBehaviour {
 	void Update () {
 		net.Update ();
 		timeElapsed += Time.deltaTime;
-		if (timeElapsed >= generationDuration) {
+		if (timeElapsed >= generationDuration + ControlCharacterML.RESPAWN_TIME) {
 			timeElapsed = 0f;
 			net.KillAndRespawn ();
 		}

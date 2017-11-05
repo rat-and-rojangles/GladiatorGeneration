@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class EvolutionaryNeuralNetwork {
 
-	private const int INPUTLAYERS = 10;
+	private const int INPUTLAYERS = 10 + 200;
 	private const int HIDDENLAYERS = 4;
 	private const int OUTPUTLAYERS = 3;
 
@@ -72,25 +72,31 @@ public class EvolutionaryNeuralNetwork {
 			winners [x] = new WinnerDistance (Mathf.Infinity, x);
 		}
 	}
-	private void RippleWinners () {
-		if (winners [2].distance < winners [1].distance) {
-			Utility.Swap (ref winners [2], ref winners [1]);
-		}
-		if (winners [1].distance < winners [0].distance) {
-			Utility.Swap (ref winners [1], ref winners [0]);
-		}
-	}
 
 	// Calculates info from player
 	public void Update () {
 		float [,] data = new float [num_enemies, INPUTLAYERS];
 		for (int x = 0; x < num_enemies; x++) {
-			data [x, 0] = enemies [x].character.transform.position.x - player.transform.position.x;
-			data [x, 1] = enemies [x].character.transform.position.y - player.transform.position.y;
+			if (enemies [x].character.dead) {
+				data [x, 0] = (enemies [x].character.transform.position.x - player.transform.position.x) * 1000f;
+				data [x, 1] = (enemies [x].character.transform.position.y - player.transform.position.y) * 1000f;
+			}
+			else {
+				data [x, 0] = enemies [x].character.transform.position.x - player.transform.position.x;
+				data [x, 1] = enemies [x].character.transform.position.y - player.transform.position.y;
+			}
 			float currentDistance = Vector2.Distance (enemies [x].character.transform.position, player.transform.position);
-			if (currentDistance < winners [2].distance) {
+			if (currentDistance < winners [0].distance) {
+				winners [2] = winners [1];
+				winners [1] = winners [0];
+				winners [0] = new WinnerDistance (currentDistance, x);
+			}
+			else if (currentDistance < winners [1].distance) {
+				winners [2] = winners [1];
+				winners [1] = new WinnerDistance (currentDistance, x);
+			}
+			else if (currentDistance < winners [2].distance) {
 				winners [2] = new WinnerDistance (currentDistance, x);
-				RippleWinners ();
 			}
 			data [x, 2] = enemies [x].character.velocity.x;
 			data [x, 3] = enemies [x].character.velocity.y;
@@ -100,6 +106,10 @@ public class EvolutionaryNeuralNetwork {
 			data [x, 7] = enemies [x].character.transform.position.y;
 			data [x, 8] = enemies [x].character.timeSinceLastJump;
 			data [x, 9] = enemies [x].character.grounded ? 1f : 0f;
+			for (int y = 0; y < 100; y++) {
+				data [x, 10 + 2 * y] = enemies [y].character.transform.position.x;
+				data [x, 10 + 2 * y + 1] = enemies [y].character.transform.position.y;
+			}
 		}
 		UpdateControllers (GetMoves (data));
 	}
@@ -185,7 +195,7 @@ public class EvolutionaryNeuralNetwork {
 				tempColor.h = (tempColor.h + Utility.randomPlusOrMinusOne * 0.05f + hueOffset).Normalized01 ();
 				enemyColors [i] = tempColor;
 				enemies [i].character.color = enemyColors [i];
-				enemies [i].character.transform.position = enemies [winner_i].character.transform.position + (Vector3)Random.insideUnitCircle;
+				enemies [i].character.RespawnAtPosition (enemies [winner_i].character.transform.position + (Vector3)Random.insideUnitCircle);
 
 				for (int j = 0; j < HIDDENLAYERS; j++) {
 					for (int k = 0; k < INPUTLAYERS; k++) W_1 [i, j, k] = W_1 [winner_i, j, k] + lr [i] * 2.0f * (UnityEngine.Random.value - .5f);
