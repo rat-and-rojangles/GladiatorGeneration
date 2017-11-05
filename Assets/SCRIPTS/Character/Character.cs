@@ -135,8 +135,12 @@ public class Character : MonoBehaviour {
 
 	public void OnTriggerEnter2D (Collider2D other) {
 		if (other.gameObject.activeSelf && controlType != ControlType.Human && enabled && !other.name.Equals ("Hurtbox")) {
+			// float
 			if (!other.CompareTag ("Laser")) {
 				other.gameObject.SetActive (false);
+			}
+			else{
+
 			}
 			Kill ();
 			if (other.name.Equals ("Bullet")) {
