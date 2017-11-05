@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Crossfade : MonoBehaviour {
+	private float initialVolA;
+	private float initialVolB;
 	public AudioSource musicA;
 	public AudioSource musicB;
 
@@ -22,10 +24,14 @@ public class Crossfade : MonoBehaviour {
 	void Start () {
 		staticRef = this;
 		crossAmount = 1f;
+		initialVolA = musicA.volume;
+		initialVolB = musicB.volume;
 	}
 
 	void Update () {
-		musicA.volume = crossAmount;
-		musicB.volume = 1f - crossAmount;
+		musicA.volume = crossAmount * initialVolA;
+		musicB.volume = (1f - crossAmount) * initialVolB;
+		// musicA.pitch = Mathf.Lerp (0.25f, 1f, crossAmount);
+		// musicB.pitch = Mathf.Lerp (0.25f, 1f, crossAmount);
 	}
 }

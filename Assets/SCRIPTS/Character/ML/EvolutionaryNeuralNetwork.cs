@@ -99,10 +99,9 @@ public class EvolutionaryNeuralNetwork {
 				data [x, 1] = enemies [x].character.transform.position.y - player.transform.position.y;
 			}
 			playerDistance = Vector2.Distance (enemies [x].character.transform.position, player.transform.position);
-			if( x< 3)
-            		{
-                		winners[x] = new WinnerDistance(playerDistance, x);
-            		}
+			if (x < 3) {
+				winners [x] = new WinnerDistance (playerDistance, x);
+			}
 			else if (playerDistance < winners [0].distance) {
 				winners [2] = winners [1];
 				winners [1] = winners [0];
@@ -239,7 +238,7 @@ public class EvolutionaryNeuralNetwork {
 	}
 
 	public void KillAndRespawn () {
-		// MasterGlitch.Glitch (ControlCharacterML.RESPAWN_TIME);
+		NeuralNetController.staticRef.GrindMusic ();
 		SoundCatalog.PlayGenerationSound ();
 		Scoreboard.AddGeneration ();
 		UpdateWeightAndRespawn (winners [0].index, winners [1].index, winners [2].index);

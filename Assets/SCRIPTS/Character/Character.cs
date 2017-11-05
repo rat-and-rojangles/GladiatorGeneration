@@ -126,21 +126,14 @@ public class Character : MonoBehaviour {
 	}
 
 	private void Jump () {
-		// velocity.y = derivedJumpVelocity;
-		// rigidbody.velocity += Vector2.up * derivedJumpVelocity;
-		// rigidbody.AddForce (Vector2.up * derivedJumpVelocity, ForceMode2D.Impulse);
 		rigidbody.SetVelocity (new Vector2 (velocity.x, derivedJumpVelocity));
 		timeSinceLastJump = 0f;
 	}
 
-	public void OnTriggerEnter2D (Collider2D other) {
+	public void OnTriggerStay2D (Collider2D other) {
 		if (other.gameObject.activeSelf && controlType != ControlType.Human && enabled && !other.name.Equals ("Hurtbox")) {
-			// float
 			if (!other.CompareTag ("Laser")) {
 				other.gameObject.SetActive (false);
-			}
-			else{
-
 			}
 			Kill ();
 			if (other.name.Equals ("Bullet")) {
@@ -167,10 +160,10 @@ public class Character : MonoBehaviour {
 		Vector3 initialPosition = transform.position;
 		float respawnTimeElapsed = 0f;
 		transform.localScale = Vector3.one * 0.5f;
-		while (respawnTimeElapsed < ControlCharacterML.RESPAWN_TIME) {
+		while (respawnTimeElapsed < NeuralNetController.staticRef.respawnTime) {
 			respawnTimeElapsed += Time.deltaTime;
-			transform.position = Interpolation.Interpolate (initialPosition, position, respawnTimeElapsed / ControlCharacterML.RESPAWN_TIME, InterpolationMethod.Quadratic);
-			Crossfade.fadeAmount = respawnTimeElapsed / ControlCharacterML.RESPAWN_TIME;
+			transform.position = Interpolation.Interpolate (initialPosition, position, respawnTimeElapsed / NeuralNetController.staticRef.respawnTime, InterpolationMethod.Quadratic);
+			Crossfade.fadeAmount = respawnTimeElapsed / NeuralNetController.staticRef.respawnTime;
 			yield return null;
 		}
 		transform.localScale = Vector3.one;
