@@ -25,7 +25,9 @@ public static class Utility {
 	/// <summary>
 	/// Random number between -1 and 1 (inclusive)
 	/// </summary>
-	public static float RandomOneMinusOne () {
-		return Random.value * 2f - 1f;
+	public static float randomPlusOrMinusOne {
+		get {
+			return Random.value * 2f - 1f;
+		}
 	}
 }

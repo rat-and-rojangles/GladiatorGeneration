@@ -10,7 +10,7 @@ public class NeuralNetController : MonoBehaviour {
 	[SerializeField]
 	private int m_numberOfEnemies = 10;
 	public int numberOfEnemies { get { return m_numberOfEnemies; } }
-	private ENN_v1 net;
+	private EvolutionaryNeuralNetwork net;
 
 	public static NeuralNetController staticRef = null;
 
@@ -39,7 +39,7 @@ public class NeuralNetController : MonoBehaviour {
 
 	private void InitializeNetIfReady () {
 		if (player != null && intialEnemyIndex == numberOfEnemies) {
-			net = new ENN_v1 (player, enemies);
+			net = new EvolutionaryNeuralNetwork (player, enemies);
 		}
 	}
 	public void RegisterEnemy (ControlCharacterML characterML) {
