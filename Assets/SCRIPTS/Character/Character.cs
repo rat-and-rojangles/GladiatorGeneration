@@ -70,7 +70,8 @@ public class Character : MonoBehaviour {
 	private FrameAction actions;
 
 	void Start () {
-		switch (controlType) {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        switch (controlType) {
 			case ControlType.Human:
 				controller = new ControlCharacterHuman ();
 				try {
@@ -87,7 +88,6 @@ public class Character : MonoBehaviour {
 				controller = new ControlCharacterML (this);
 				break;
 		}
-		spriteRenderer = GetComponent<SpriteRenderer> ();
 		collider = GetComponent<BoxCollider2D> ();
 		rigidbody = GetComponent<Rigidbody2D> ();
 		groundCheckPointLeftLocal = collider.offset + Vector2.down * collider.size.y * 0.55f + Vector2.left * collider.size.x * 0.5f;

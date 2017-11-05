@@ -4,8 +4,13 @@ using UnityEngine;
 
 public class EvolutionaryNeuralNetwork {
 
+<<<<<<< HEAD
 	private const int INPUTLAYERS = 11;
 	private const int HIDDENLAYERS = 4;
+=======
+	private const int INPUTLAYERS = 10;
+	private const int HIDDENLAYERS = 6;
+>>>>>>> dank_memes
 	private const int OUTPUTLAYERS = 3;
 	private const float HUE_SEPARATION = 0.075f;
 
@@ -78,6 +83,7 @@ public class EvolutionaryNeuralNetwork {
 	public void Update () {
 		float [,] data = new float [num_enemies, INPUTLAYERS];
 		for (int x = 0; x < num_enemies; x++) {
+<<<<<<< HEAD
 			if (enemies [x].character.dead) {
 				data [x, 0] = (enemies [x].character.transform.position.x - player.transform.position.x) * 1000f;
 				data [x, 1] = (enemies [x].character.transform.position.y - player.transform.position.y) * 1000f;
@@ -99,6 +105,20 @@ public class EvolutionaryNeuralNetwork {
 			else if (playerDistance < winners [2].distance) {
 				winners [2] = new WinnerDistance (playerDistance, x);
 			}
+=======
+			data [x, 0] = enemies [x].character.transform.position.x - player.transform.position.x;
+			data [x, 1] = enemies [x].character.transform.position.y - player.transform.position.y;
+			float currentDistance = Vector2.Distance (enemies [x].character.transform.position, player.transform.position);
+            if( x< 3)
+            {
+                winners[x] = new WinnerDistance(currentDistance, x);
+            }
+
+            else { if (currentDistance < winners[2].distance) {
+                    winners[2] = new WinnerDistance(currentDistance, x);
+                    RippleWinners();
+                } }
+>>>>>>> dank_memes
 			data [x, 2] = enemies [x].character.velocity.x;
 			data [x, 3] = enemies [x].character.velocity.y;
 			data [x, 4] = player.velocity.x;
