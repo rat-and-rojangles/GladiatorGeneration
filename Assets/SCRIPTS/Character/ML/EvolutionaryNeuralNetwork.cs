@@ -5,7 +5,7 @@ using UnityEngine;
 public class EvolutionaryNeuralNetwork {
 
 	private const int INPUTLAYERS = 10;
-	private const int HIDDENLAYERS = 4;
+	private const int HIDDENLAYERS = 6;
 	private const int OUTPUTLAYERS = 3;
 
 	private float [,,] W_1;
@@ -88,10 +88,15 @@ public class EvolutionaryNeuralNetwork {
 			data [x, 0] = enemies [x].character.transform.position.x - player.transform.position.x;
 			data [x, 1] = enemies [x].character.transform.position.y - player.transform.position.y;
 			float currentDistance = Vector2.Distance (enemies [x].character.transform.position, player.transform.position);
-			if (currentDistance < winners [2].distance) {
-				winners [2] = new WinnerDistance (currentDistance, x);
-				RippleWinners ();
-			}
+            if( x< 3)
+            {
+                winners[x] = new WinnerDistance(currentDistance, x);
+            }
+
+            else { if (currentDistance < winners[2].distance) {
+                    winners[2] = new WinnerDistance(currentDistance, x);
+                    RippleWinners();
+                } }
 			data [x, 2] = enemies [x].character.velocity.x;
 			data [x, 3] = enemies [x].character.velocity.y;
 			data [x, 4] = player.velocity.x;
