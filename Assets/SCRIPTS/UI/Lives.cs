@@ -13,15 +13,29 @@ public class Lives : MonoBehaviour {
 	[SerializeField]
 	private Sprite deadIcon;
 
-	private static Lives staticRef;
+	public static Lives staticRef;
 
 	void Start () {
 		staticRef = this;
 		if (infiniteLives) {
-			staticRef.lifeImages [0].sprite = staticRef.deadIcon;
-			staticRef.lifeImages [0].color = Color.gray;
-			staticRef.lifeImages [2].sprite = staticRef.deadIcon;
-			staticRef.lifeImages [2].color = Color.gray;
+			InfiniteMark ();
+		}
+	}
+
+	void Update () {
+		if (Input.GetKey (KeyCode.Escape) && Input.GetKey (KeyCode.RightShift)) {
+			Application.Quit ();
+		}
+		if (Input.GetKeyDown (KeyCode.G)) {
+			infiniteLives = !infiniteLives;
+			InfiniteMark ();
+		}
+	}
+
+	private void InfiniteMark () {
+		foreach (UnityEngine.UI.Image i in staticRef.lifeImages) {
+			i.sprite = staticRef.deadIcon;
+			i.color = Color.green;
 		}
 	}
 

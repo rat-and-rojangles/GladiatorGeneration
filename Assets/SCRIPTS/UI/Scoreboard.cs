@@ -7,6 +7,9 @@ using UnityEngine.SceneManagement;
 public class Scoreboard : MonoBehaviour {
 	private static Scoreboard staticRef;
 
+	[SerializeField]
+	private HighScore highScore;
+
 	private Text text;
 	private int generations = 1;
 	private int score = 0;
@@ -20,7 +23,9 @@ public class Scoreboard : MonoBehaviour {
 		AddScore (staticRef.generations);
 	}
 	public static void AddScore (int score) {
-		staticRef.score += score;
+		if (!Lives.dead) {
+			staticRef.score += score;
+		}
 		staticRef.UpdateText ();
 	}
 
@@ -54,6 +59,12 @@ public class Scoreboard : MonoBehaviour {
 			timeElapsed += Time.deltaTime;
 			transform.localPosition = Interpolation.Interpolate (initialPos, magicPos, timeElapsed / moveDuration, InterpolationMethod.SquareRoot);
 			transform.localScale = Interpolation.Interpolate (initialScale, magicScale, timeElapsed / moveDuration, InterpolationMethod.SquareRoot);
+			if (timeElapsed / moveDuration > 0.5f) {
+				if (!Lives.staticRef.infiniteLives && score > PlayerPrefs.GetInt ("HighScore", 0)) {
+					PlayerPrefs.SetInt ("HighScore", score);
+				}
+				highScore.gameObject.SetActive (true);
+			}
 			yield return null;
 		}
 		while (!Input.GetMouseButtonDown (0)) {

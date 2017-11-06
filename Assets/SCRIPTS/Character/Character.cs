@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Character : MonoBehaviour {
+	[SerializeField]
+	private LayerMask masq;
+	private static LayerMask m_mask;
 	private static LayerMask mask {
-		get { return -257; }
+		get { return m_mask; }
 	}
 
 	private enum ControlType { Human, Random, ML }
@@ -69,9 +72,11 @@ public class Character : MonoBehaviour {
 
 	private FrameAction actions;
 
+
 	void Start () {
 		switch (controlType) {
 			case ControlType.Human:
+				m_mask = masq;
 				controller = new ControlCharacterHuman ();
 				try {
 					NeuralNetController.staticRef.RegisterPlayer (this);
@@ -163,7 +168,6 @@ public class Character : MonoBehaviour {
 		while (respawnTimeElapsed < NeuralNetController.staticRef.respawnTime) {
 			respawnTimeElapsed += Time.deltaTime;
 			transform.position = Interpolation.Interpolate (initialPosition, position, respawnTimeElapsed / NeuralNetController.staticRef.respawnTime, InterpolationMethod.Quadratic);
-			Crossfade.fadeAmount = respawnTimeElapsed / NeuralNetController.staticRef.respawnTime;
 			yield return null;
 		}
 		transform.localScale = Vector3.one;

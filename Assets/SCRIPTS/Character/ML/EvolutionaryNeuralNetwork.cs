@@ -5,7 +5,7 @@ using UnityEngine;
 public class EvolutionaryNeuralNetwork {
 
 	private const int INPUTLAYERS = 11;
-	private const int HIDDENLAYERS = 4;
+	private const int HIDDENLAYERS = 6;
 	private const int OUTPUTLAYERS = 3;
 	private const float HUE_SEPARATION = 0.075f;
 
@@ -51,18 +51,19 @@ public class EvolutionaryNeuralNetwork {
 		for (int i = 0; i < num_enemies; i++) {
 			for (int j = 0; j < HIDDENLAYERS; j++) {
 				for (int k = 0; k < INPUTLAYERS; k++) {
-					W_1 [i, j, k] = 2.0f * (UnityEngine.Random.value - .5f);
+					W_1 [i, j, k] = 2.0f * (UnityEngine.Random.value - .5f) * 0.01f;
 				}
-				B_1 [i, j] = 2.0f * (UnityEngine.Random.value - .5f);
+				B_1 [i, j] = 2.0f * (UnityEngine.Random.value - .5f) * 0.01f;
 			}
 		}
 
 		for (int i = 0; i < num_enemies; i++) {
 			for (int j = 0; j < OUTPUTLAYERS; j++) {
 				for (int k = 0; k < HIDDENLAYERS; k++) {
-					W_2 [i, j, k] = 2.0f * (UnityEngine.Random.value - .5f);
+					W_2 [i, j, k] = 0.001f * (UnityEngine.Random.value - .5f);
 				}
-				B_2 [i, j] = 2.0f * (UnityEngine.Random.value - .5f);
+				B_2 [i, j] = -0.1f;//2.0f * (UnityEngine.Random.value - .5f);
+				if(j==1) B_2 [i, j] = 0.1f;
 			}
 		}
 
@@ -80,7 +81,7 @@ public class EvolutionaryNeuralNetwork {
 		for (int x = 0; x < num_enemies; x++) {
 			float playerDistance = Vector2.Distance (enemies [x].character.transform.position, player.transform.position);
 			if (enemies [x].character.dead) {
-				playerDistance = playerDistance * 1000f;
+				playerDistance = playerDistance * 100000f;
 				data [x, 0] = (enemies [x].character.transform.position.x - player.transform.position.x) * 1000f;
 				data [x, 1] = (enemies [x].character.transform.position.y - player.transform.position.y) * 1000f;
 			}
@@ -88,7 +89,7 @@ public class EvolutionaryNeuralNetwork {
 				data [x, 0] = enemies [x].character.transform.position.x - player.transform.position.x;
 				data [x, 1] = enemies [x].character.transform.position.y - player.transform.position.y;
 			}
-			playerDistance = Vector2.Distance (enemies [x].character.transform.position, player.transform.position);
+			//playerDistance = Vector2.Distance (enemies [x].character.transform.position, player.transform.position);
 			if (x < 3) {
 				winners [x] = new WinnerDistance (playerDistance, x);
 			}
@@ -201,7 +202,7 @@ public class EvolutionaryNeuralNetwork {
 	private void weight_update_for_loop (int winner_i, int lower_bound, int upper_bound, float hueOffset) {
 		for (int i = lower_bound; i < upper_bound; i++) {
 			if (i != winner_1_idx && i != winner_2_idx && i != winner_3_idx) {
-				lr [i] = lr [winner_i] + 2.0f * (UnityEngine.Random.value - .5f) / 5;
+				lr [i] = lr [winner_i] + 2.0f * (UnityEngine.Random.value - .5f) / 20.0f;
 				ColorHSV tempColor = enemyColors [winner_i];
 				tempColor.h = (tempColor.h + Utility.randomPlusOrMinusOne * HUE_SEPARATION + hueOffset).Normalized01 ();
 				enemyColors [i] = tempColor;

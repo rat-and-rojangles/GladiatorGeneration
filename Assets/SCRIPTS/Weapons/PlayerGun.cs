@@ -11,8 +11,6 @@ public class PlayerGun : MonoBehaviour {
 	public float fullChargeDuration = 1f;
 	private float chargeTimeElapsed = 0f;
 
-	public KeyCode lookKey;
-
 	private float chargeRatio {
 		get { return Mathf.Clamp01 (chargeTimeElapsed / fullChargeDuration); }
 	}
@@ -55,12 +53,13 @@ public class PlayerGun : MonoBehaviour {
 			transform.rotation = Quaternion.Euler (0f, 0f, rot_z);
 		}
 		else {
-			transform.rotation = Quaternion.Lerp (transform.rotation, Quaternion.Euler (0f, 0f, rot_z), 2f * Time.deltaTime);
+			transform.rotation = Quaternion.Lerp (transform.rotation, Quaternion.Euler (0f, 0f, rot_z), 0.5f * Time.deltaTime);
 		}
-		if (!Input.GetKey (lookKey)) {
+
+		if (!Input.GetMouseButton (1) || Input.GetKey (KeyCode.LeftShift)) {
 			camLead = Vector2.zero;
 		}
-		else if (Input.GetKey (lookKey)) {
+		else {
 			float leadFactor = Mathf.Lerp (leadMinDistance, leadMaxDistance, (diff.magnitude - leadMinDistance) / (leadMaxDistance - leadMinDistance)) - leadMinDistance;
 			camLead = transform.right * leadFactor;
 		}
